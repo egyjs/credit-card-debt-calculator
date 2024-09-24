@@ -10,13 +10,9 @@ const App = () => {
 
 
     // timestamp (in milliseconds since UNIX epoch)
-    let startDate = moment().date(20).startOf('day');
-    let endDate = moment().date(20).add(1, 'month').endOf('day');
+    let startDate = moment().date(21).startOf('day');  // 09/21/2024 00:00
+    let endDate = moment().date(20).add(1, 'month').endOf('day'); // 10/20/2024 23:59
 
-    if (moment().date() < 20) {
-        startDate = moment().date(20).subtract(1, 'month').startOf('day');
-        endDate = moment().date(20).endOf('day');
-    }
 
     console.log('Start Date: ', startDate.format('YYYY-MM-DD HH:mm'));
     console.log('End Date: ', endDate.format('YYYY-MM-DD HH:mm'));
@@ -79,7 +75,7 @@ const App = () => {
             console.log('Filtered Count: ', filteredSms.length);
             setSmsList(filteredSms);
             calculateTotal(filteredSms);
-        }
+        };
 
         const calculateTotal = (list: Array<Object>) => {
             let t: number = 0;
@@ -120,11 +116,11 @@ const App = () => {
             {renderInput()}
             <Text style={{fontSize: 20, fontWeight: 'bold'}}>
                 You need to pay:
-                <Text style={{fontSize:30,textDecorationLine:"underline"}}>{total}</Text>
-                <Text style={{fontSize: 20, color:"gray"}}> EGP</Text>
+                <Text style={{fontSize:30,textDecorationLine:'underline'}}>{total}</Text>
+                <Text style={{fontSize: 20, color:'gray'}}> EGP</Text>
             </Text>
             <Text style={{fontSize: 15, fontWeight: 'bold'}}>
-                SMS List <Text style={{fontSize: 13, color:"gray"}}>
+                SMS List <Text style={{fontSize: 13, color:'gray'}}>
                     ({smsList.length} - from {startDate.format('YYYY-MM-DD')} to {endDate.format('YYYY-MM-DD')})
                 </Text>
             </Text>
