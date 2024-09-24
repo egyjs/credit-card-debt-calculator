@@ -23,8 +23,8 @@ This application helps you track your credit card expenses and calculate the tot
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/yourusername/credit-card-payment-tracker.git
-    cd credit-card-payment-tracker
+    git clone https://github.com/egyjs/credit-card-debt-calculator.git 
+    cd credit-card-debt-calculator
     ```
 
 2. Install the dependencies:
