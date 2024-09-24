@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {PermissionsAndroid, Text, View, FlatList, TextInput, ScrollView} from 'react-native';
+import {PermissionsAndroid, Text, View, TextInput, ScrollView} from 'react-native';
 import SmsAndroid from 'react-native-get-sms-android';
 import moment from 'moment';
 // todo: code needs to be refactored and optimized, add missing types
