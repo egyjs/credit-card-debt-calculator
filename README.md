@@ -1,5 +1,3 @@
-## README
-
 # Credit Card Payment Tracker
 
 This application helps you track your credit card expenses and calculate the total amount you need to pay off each month to avoid late fees and interest. It fetches SMS messages from your phone, filters them based on specific criteria, and calculates the total amount spent.
