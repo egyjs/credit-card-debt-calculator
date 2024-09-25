@@ -14,8 +14,8 @@ const App = () => {
 
 
     // timestamp (in milliseconds since UNIX epoch)
-    let startDate = moment().date(21).subtract(1, 'month').startOf('day');
-    let endDate = moment().date(20).add(1, 'month').endOf('day');
+    let startDate = moment().date(21).subtract(1, 'month').startOf('day'); // 8/21/2024
+    let endDate = moment().date(20).add(1, 'month').endOf('day'); // 10/20/2024
 
     let prevMonthDate = {
         start: startDate,

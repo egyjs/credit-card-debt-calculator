@@ -9,6 +9,8 @@ This application helps you track your credit card expenses and calculate the tot
 - Calculates the total amount spent in the previous month.
 - Displays the total amount to be paid and a list of relevant SMS messages.
 
+
+![Screenshot_2024-09-25-12-54-43-566_com.creditcarddebtcalculator.jpg](.github/screenshot/Screenshot_2024-09-25-12-54-43-566_com.creditcarddebtcalculator.jpg)
 ## Installation
 
 ### Prerequisites
