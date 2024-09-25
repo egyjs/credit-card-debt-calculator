@@ -58,6 +58,13 @@ This application helps you track your credit card expenses and calculate the tot
 3. The application will fetch and filter SMS messages based on the entered digits.
 4. The total amount to be paid will be displayed along with a list of relevant SMS messages.
 
+## Build
+
+```bash
+#npm run <platform> -- --mode="release" #, ex:
+npm run android -- --mode="release"
+```
+
 ## Troubleshooting
 
 If you encounter any issues, refer to the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.

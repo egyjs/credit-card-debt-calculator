@@ -1,18 +1,31 @@
 import React, {useEffect, useState} from 'react';
-import {PermissionsAndroid, Text, View, TextInput, ScrollView} from 'react-native';
-import SmsAndroid from 'react-native-get-sms-android';
+import {PermissionsAndroid, ScrollView, Text, TextInput, View} from 'react-native';
+import SmsAndroid, {SMS} from 'react-native-get-sms-android';
 import moment from 'moment';
-// todo: code needs to be refactored and optimized, add missing types
+
+
 const App = () => {
-    const [smsList, setSmsList] = useState([]);
+    // const [smsList, setSmsList] = useState([]);
+    const [prevMonthList, setPrevMonthList] = useState<Array<SMS>>([]);
+    const [currentMonthList, setCurrentMonthList] = useState<Array<SMS>>([]);
     const [text, setText] = useState('2823');
-    const [total, setTotal] = useState(0);
+    const [prevMonthTotal, setPrevMonthTotal] = useState(0);
+    const [currentMonthTotal, setCurrentMonthTotal] = useState(0);
 
 
     // timestamp (in milliseconds since UNIX epoch)
-    let startDate = moment().date(21).startOf('day');  // 09/21/2024 00:00
-    let endDate = moment().date(20).add(1, 'month').endOf('day'); // 10/20/2024 23:59
+    let startDate = moment().date(21).subtract(1, 'month').startOf('day');
+    let endDate = moment().date(20).add(1, 'month').endOf('day');
 
+    let prevMonthDate = {
+        start: startDate,
+        end: moment(endDate).subtract(1, 'month').endOf('day'),
+    };
+
+    let currentMonthDate = {
+        start: moment(startDate).add(1, 'month').startOf('day'),
+        end: endDate,
+    };
 
     console.log('Start Date: ', startDate.format('YYYY-MM-DD HH:mm'));
     console.log('End Date: ', endDate.format('YYYY-MM-DD HH:mm'));
@@ -41,57 +54,53 @@ const App = () => {
             }
         };
 
-        const fetchSms =  () => {
+        const fetchSms = () => {
             const filter = {
-                box: 'inbox', // 'inbox' or 'sent'
-                // the phone number to filter by, or '' to retrieve all
+                box: 'inbox',
                 address: 'CIB',
-                // the date range as a UNIX timestamp (in seconds)
-                // from the first Of the previous month to the current date
                 minDate: startDate.valueOf(),
                 maxDate: endDate.valueOf(),
-                bodyRegex: '.*(charged|تم خصم).*', // content regex to match
+                bodyRegex: '.*(charged|تم خصم).*',
             };
 
             SmsAndroid.list(
                 JSON.stringify(filter),
-                (fail) => {
+                (fail: string) => {
                     console.log('Failed with this error: ' + fail);
                 },
-                (count, smsList) => {
-                    const arr = JSON.parse(smsList);
-                    // sort sms by date (oldest to newest)
+                (count: number, smsList: string) => {
+                    const arr: Array<SMS> = JSON.parse(smsList);
                     arr.sort((a, b) => a.date - b.date);
-                    setSmsList(arr);
+                    console.log('');
                     console.log('All Count: ', count);
                     filterSms(arr);
                 },
             );
         };
 
-        const filterSms = (list: Array<Object>) => {
-            // filter sms by the body that contains "the number of the card" (input)
+        const filterSms = (list: Array<SMS>) => {
             const filteredSms = list.filter(sms => sms.body.includes(text));
             console.log('Filtered Count: ', filteredSms.length);
-            setSmsList(filteredSms);
-            calculateTotal(filteredSms);
+            const prevMonthSms = filteredSms.filter(sms => moment(sms.date).isBefore(moment(currentMonthDate.start)));
+            const currentMonthSms = filteredSms.filter(sms => moment(sms.date).isAfter(moment(currentMonthDate.start)));
+
+            console.log('Prev Month Count: ', prevMonthSms.length);
+            console.log('Current Month Count: ', currentMonthSms.length);
+            console.log('');
+
+            setPrevMonthList(prevMonthSms);
+            setCurrentMonthList(currentMonthSms);
+
+            setPrevMonthTotal(calculateTotal(prevMonthSms));
+            setCurrentMonthTotal(calculateTotal(currentMonthSms));
         };
 
-        const calculateTotal = (list: Array<Object>) => {
-            let t: number = 0;
-            list.forEach(sms => {
-                const body = sms.body;
-                const regex = /(\d+\.\d+)/;
-                const match = body.match(regex);
-                if (match) {
-                    console.log('Match: ', match[0]);
-                    t += parseFloat(match[0]);
-                }
-            });
-            console.log('Total: ', t);
-            setTotal(parseFloat(t.toFixed(2)));
+        const calculateTotal = (list: Array<SMS>) => {
+            return list.reduce((sum, sms) => {
+                const match = sms.body.match(/(\d+\.\d+)/);
+                return match ? sum + parseFloat(match[0]) : sum;
+            }, 0);
         };
-
 
         requestSmsPermission();
     }, [text]);
@@ -99,9 +108,9 @@ const App = () => {
     const renderInput = () => {
         return (
             <View>
-                <Text style={{fontSize: 15, fontWeight: 'bold'}}>Last 4 digits of your card (e.g. 2823)</Text>
+                <Text style={{ fontSize: 15, fontWeight: 'bold' }}>Last 4 digits of your card (e.g. 2823)</Text>
                 <TextInput
-                    style={{padding:10,height: 50, borderColor: 'gray', borderWidth: 1}}
+                    style={{ padding: 10, height: 50, borderColor: 'gray', borderWidth: 1 }}
                     placeholder="Enter the last 4 digits of your card (e.g. 2823)"
                     onChangeText={newText => setText(newText)}
                     defaultValue={text}
@@ -111,27 +120,36 @@ const App = () => {
         );
     };
 
-    return (
-        <View style={{flex: 1, padding: 20}}>
-            {renderInput()}
-            <Text style={{fontSize: 20, fontWeight: 'bold'}}>
-                You need to pay:
-                <Text style={{fontSize:30,textDecorationLine:'underline'}}>{total}</Text>
-                <Text style={{fontSize: 20, color:'gray'}}> EGP</Text>
-            </Text>
-            <Text style={{fontSize: 15, fontWeight: 'bold'}}>
-                SMS List <Text style={{fontSize: 13, color:'gray'}}>
-                    ({smsList.length} - from {startDate.format('YYYY-MM-DD')} to {endDate.format('YYYY-MM-DD')})
+    const renderMonth = (list: Array<SMS>, title: string, price: number, date: { start: moment.Moment; end: moment.Moment }) => {
+        return (
+            <ScrollView style={{ marginTop: 20, borderWidth: 1, padding: 10, height: 300 }}>
+                <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
+                    {title}
+                    <Text style={{ fontSize: 30, textDecorationLine: 'underline' }}>{price}</Text>
+                    <Text style={{ fontSize: 20, color: 'gray' }}> EGP</Text>
                 </Text>
-            </Text>
-            <ScrollView>
-                {smsList.map((sms, index) => (
-                    <View key={index} style={{borderWidth: 1, padding: 10, margin: 5}}>
-                        <Text style={{fontWeight: 'bold', fontSize: 16,alignSelf:'center'}}>{sms.body}</Text>
-                        <Text style={{color: 'gray'}}>Date: {moment(sms.date).format('YYYY-MM-DD HH:mm')}</Text>
-                    </View>
-                ))}
+                <Text style={{ fontSize: 15, fontWeight: 'bold' }}>
+                    SMS List <Text style={{ fontSize: 13, color: 'gray' }}>
+                        ({list.length} - from {date.start.format('YYYY-MM-DD')} to {date.end.format('YYYY-MM-DD')})
+                    </Text>
+                </Text>
+                <ScrollView>
+                    {list.map((sms, index) => (
+                        <View key={index} style={{ borderWidth: 1, padding: 10, margin: 5 }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 16, alignSelf: 'center' }}>{sms.body}</Text>
+                            <Text style={{ color: 'gray' }}>Date: {moment(sms.date).format('YYYY-MM-DD HH:mm')}</Text>
+                        </View>
+                    ))}
+                </ScrollView>
             </ScrollView>
+        );
+    };
+
+    return (
+        <View style={{ flex: 1, padding: 20 }}>
+            {renderInput()}
+            {renderMonth(prevMonthList, 'You need to pay: ', prevMonthTotal, prevMonthDate)}
+            {renderMonth(currentMonthList, 'You have spent: ', currentMonthTotal, currentMonthDate)}
         </View>
     );
 };
